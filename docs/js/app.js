@@ -11,28 +11,51 @@ let cards = [
   { id:9, label:'鳥', icon:'🐦', audio:'' },
   { id:10, label:'車', icon:'🚗', audio:'' }
 ];
-let idx = 0;
+let pageIdx = 0;
 
 function render() {
   if (!cards.length) {
     container.innerHTML = '<p>カードがありません</p>';
     return;
   }
-  const c = cards[idx];
-  container.innerHTML = `
-    <div class="card">
-      <div style="font-size:120px;margin:20px 0;">${c.icon}</div>
-      <h2>${c.label}</h2>
-      <div style="margin-top:8px;">
-        ${c.audio ? `<button id="play">再生</button>` : ''}
-        <button id="next">次へ</button>
+  const cardsPerPage = 3;
+  const start = pageIdx * cardsPerPage;
+  const end = start + cardsPerPage;
+  const page = cards.slice(start, end);
+  
+  let html = '<div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;">';
+  page.forEach(c => {
+    html += `
+      <div class="card" style="text-align:center;width:150px;">
+        <div style="font-size:80px;">${c.icon}</div>
+        <h3>${c.label}</h3>
       </div>
-    </div>
-  `;
+    `;
+  });
+  html += '</div>';
+  html += `<div style="text-align:center;margin-top:20px;">
+    ${pageIdx > 0 ? `<button id="prev">前へ</button>` : ''}
+    <button id="next">次へ</button>
+    <p>ページ ${pageIdx + 1} / ${Math.ceil(cards.length / cardsPerPage)}</p>
+  </div>`;
+  
+  container.innerHTML = html;
+  
   const next = document.getElementById('next');
-  if (next) next.addEventListener('click', ()=> { idx = (idx+1) % cards.length; render(); });
-  const play = document.getElementById('play');
-  if (play) play.addEventListener('click', ()=> { new Audio(c.audio).play().catch(()=>{}); });
+  if (next) next.addEventListener('click', ()=> {
+    if ((pageIdx + 1) * 3 < cards.length) {
+      pageIdx++;
+      render();
+    }
+  });
+  
+  const prev = document.getElementById('prev');
+  if (prev) prev.addEventListener('click', ()=> {
+    if (pageIdx > 0) {
+      pageIdx--;
+      render();
+    }
+  });
 }
 
 render();
